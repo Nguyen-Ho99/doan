@@ -174,7 +174,7 @@ include('connect.php');
 		</div>
 		<div class="right_single">
 			<div class="product_img">
-				<img src="<?=$product['image']?>" alt="">
+				<img src="../<?=$product['image']?>" alt="">
 			</div>
 		</div>
 	

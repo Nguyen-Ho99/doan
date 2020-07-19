@@ -20,7 +20,7 @@
 				<a class="nav-link" style="color:orangered;"href="header.php">Trang chủ <span class="sr-only">(current)</span></a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="#">giới thiệu</a>
+				<a class="nav-link" href="introduce.php">giới thiệu</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" href="#">blog</a>
@@ -35,7 +35,7 @@
 		</div>
 		
 		<div class="cart-top">
-		<a href=""><img src="img/carttopicon.jpg" alt=""></a>
+		<a href="cart.php"><img src="img/carttopicon.jpg" alt=""></a>
 		</div>
 	</nav>
 </div><!-- >het toppadding -->

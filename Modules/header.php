@@ -18,13 +18,13 @@
 		<a class="navbar-brand" href="#"><img src="img/logo.png" alt=""></a>
 		<ul class="nav navbar-nav menu">
 			<li class="nav-item active">
-				<a class="nav-link" style="color:orangered;"href="#">Trang chủ <span class="sr-only">(current)</span></a>
+				<a class="nav-link" style="color:orangered;"href="header.php">Trang chủ <span class="sr-only">(current)</span></a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="#">giới thiệu</a>
+				<a class="nav-link" href="introduce.php">giới thiệu</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="#">blog</a>
+				<a class="nav-link" href="blog.php">blog</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" href="#">liên hệ</a>
@@ -34,9 +34,15 @@
 			<p style="font-size: 12px;font-style: italic;">Tư vấn đặt hàng</p>
 			<p>05544515555</p>
 		</div>
-		
+		<div class="search">
+			 <form id="product-search" method="GET">
+               
+                <input type="text" value="<?=isset($_GET['name']) ? $_GET['name'] : ""?>" name="name" />
+                <input type="submit" value="Tìm" />
+            </form>
+		</div>
 		<div class="cart-top">
-		<a href=""><img src="img/carttopicon.jpg" alt=""></a>
+		<a href="cart.php"><img src="img/carttopicon.jpg" alt=""></a>
 		</div>
 	</nav>
 </div><!-- >het toppadding -->
@@ -139,23 +145,36 @@
 				NHANH CHÓNG TIỆN LỢI
 				</span>
 				</div>
-			</div><!-- het tophome_right -->
-		</div>
-	</div><!--   ketthuctophom -->
-  <?php
-        include './connect.php';
-        $item_per_page = !empty($_GET['per_page'])?$_GET['per_page']:8;
+			</div><!-- het tophome_righ -->
+<?php
+         $search = isset($_GET['name']) ? $_GET['name'] : "";
+        if ($search) {
+            $where = "WHERE `name` LIKE '%" . $search . "%'";
+            }
+        include 'connect.php';
+
+        $item_per_page = !empty($_GET['per_page'])?$_GET['per_page']:12;
         $current_page = !empty($_GET['page'])?$_GET['page']:1; //Trang hiện tại
         $offset = ($current_page - 1) * $item_per_page;
+        if ($search) {
+        	   $products = mysqli_query($con, "SELECT * FROM `product` WHERE `name` LIKE '%" . $search . "%' ORDER BY `id` ASC  LIMIT " . $item_per_page . " OFFSET " . $offset);
+            $totalRecords = mysqli_query($con, "SELECT * FROM `product` WHERE `name` LIKE '%" . $search . "%'");
+        }
+        else{
         $products = mysqli_query($con, "SELECT * FROM `product` ORDER BY `id` ASC  LIMIT " . $item_per_page . " OFFSET " . $offset);
-        $totalRecords = mysqli_query($con, "SELECT * FROM `product`");
+            $totalRecords = mysqli_query($con, "SELECT * FROM `product`");
+        }
+      
         $totalRecords = $totalRecords->num_rows;
         $totalPages = ceil($totalRecords / $item_per_page);
-
+ 
         ?>
+        
+
 
 	<div class="main">
 		<div class="wapper">
+
 			<div class="homecat">
 				<div class="hom_cat_title">
 				<h3 class="title_homecat"><a href="">các loại bia bán chạy nhất</a></h3>
@@ -168,7 +187,7 @@
 					<div class="item">
 						<img src="img/new.png" alt="" class="productlable">
 						<div class="item_img">
-							<a href="detail.php?id=<?= $row['id'] ?>"><img src="<?= $row['image'] ?>" title="<?= $row['name'] ?>" alt=""></a>
+							<a href="detail.php?id=<?= $row['id'] ?>"><img src="../<?= $row['image'] ?>" title="<?= $row['name'] ?>" alt=""></a>
 						</div><!--  het item_img -->
 						<div class="price_bar">
 							<span><b><?= number_format($row['price'], 0, ",", ".") ?> đ</b></span>
@@ -177,11 +196,13 @@
 						<h2><a href="detail.php?id=<?= $row['id'] ?>">
 							<?= $row['name'] ?>
 						</a></h2>
-					<p><?= $row['content'] ?></p>
+					<p><?= $row['content']?>	</p>
 					<div class="buybar">
-						<span class="datmua">Đặt mua</span>
+						 <form id="add-to-cart-form" action="cart.php?action=add" method="POST">
+						<span class="datmua"></span>
 						<a href="detail.php?id=<?= $row['id'] ?>" class="chitiet">Xem chi tiết</a>
 					</div>
+				</form>
 					</div> <!-- het item -->
 
  <?php } ?>
@@ -193,56 +214,8 @@
                 ?>
 		</div>
 	</div> <!-- het main -->
-	
- <div class="bottom">
-		<div class="wapper">
-			<div class="leftbot">
-				<div class="bottitle">Kiến thức về bia</div>
-				<div class="botcontent">
-					<div class="home_big_new">
-						<a href=""><img src="img/crona.jpg"></a>
-						<h2><a href="">Phân tích SWOT của thương hiệu Corona Extra</a></h2>
-							<p>Corona Extra là một trong những thương hiệu bia bán chạy nhất thế giới và có số lượng xuất khẩu cao nhất. Mặc dù các loại bia Mexico luôn được ưa chuộng, Corona Extra nổi bật cả về hương vị lẫn màu sắc và có lượng fan trung thành với thương hiệu rất cao.</p>
-						<a href="" class="chitiet">Xem chi tiết</a>
-					</div>
-				</div> <!-- het botcontent -->
-			 </div>
-			<div class="rightbot">
-				<div class="bottitle">Thông tin chung</div>
-				<div class="botcontent">
-					<div class="home_list_new">
-						<a href=""><img src="img/crona.jpg" alt=""></a>
-						<h2><a href="">Phân tích SWOT của thương hiệu Corona Extra</a></h2>
-						<p>Corona Extra là một trong những thương hiệu bia bán chạy nhất thế giới và có số</p>
-					</div>
-					<div class="home_list_new">
-						<a href=""><img src="img/hop-qua-bia-chimay-sac-mau-doc-dao-don-tet-2020.jpg" alt=""></a>
-						<h2><a href="">Hộp quà bia Chimay sắc mầu độc đáo đón tết 2020!</a></h2>
-						<p>Bia là một trong những loại thức uống thơm ngon, hấp dẫn và đầy quyến rũ.</p>
-					</div>
-					<div class="home_list_new"><a href=""><img src="img/Bia Sứ St. Paul Triple – Mùi vị bia Bỉ nồng nàn.jpg" alt=""></a>
-						<h2><a href="">Bia Sứ St. Paul Triple – Mùi vị bia Bỉ nồng nàn</a></h2>
-						<p>Được mệnh danh là loại bia lên men nổi, với sự kết hợp hài hòa giữa hương malt</p></div>
-				</div>
-			</div>
-		</div>
-	</div><!-- het botom -->
+
  
-	 <div class="footer_menu">
-		<ul>
-			<li class="footer_title">
-						<a href="#">rượu vang quà biếu</a></li>
-					
-		</ul>
-	 </div><!-- --het footer--> 
-	 <div class="footer_copy">
-	 	<div class="wapper">
-	 		<p style="text-transform: uppercase;color:orange">Đại lý phân phối bia Công nguyên</p>
-	 		<p>Hotline:0146586656 | Email:nguyenk39a9@gmail.com</p>
-	 		<p>Add:55 Hưng Dũng,Tp Vinh,Nghệ An</p>
-	 		<p>https://www.facebook.com/bianhapkhauvip/</p>
-	 	</div>
-	 </div>	
 </body>
 </html>
  

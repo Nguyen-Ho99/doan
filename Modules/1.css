@@ -6,11 +6,16 @@
 .cart-top {
     height: 40px;
     /* margin: 15px; */
-    width: 120px;
+    width: 50px;
     float: left;
     /* padding: 16px; */
     margin: 22px 0px;
     text-align: center;
+}
+form#product-search {
+    /* display: inline-block; */
+    float: left;
+    padding: 28px 9px;
 }
 
 ul.nav.navbar-nav.menu li:hover{
@@ -22,7 +27,7 @@ ul.nav.navbar-nav.menu li a:hover{
 
 }
 .contact_top {
-    width: 245px;
+    width: 133px;
     height: 40px;
     float: left;
     padding-left: 40px;
@@ -43,7 +48,7 @@ ul.nav.navbar-nav.menu li a:hover{
 }
 ul.nav.navbar-nav.menu li a {
     color: white;
-     padding:30px 10px 20px 10px;
+     padding:30px 8px 20px 8px;
       text-transform: uppercase;
 }
 nav.navbar.navbar-light.bg-faded {
@@ -116,6 +121,8 @@ ul li.menu_item:hover{
     color: #000;
     line-height: 20px;
     float: left;
+
+
 }
 .tophome_right {
     max-width: 50%;
@@ -409,3 +416,4 @@ a.chitiet{
     text-align: center;
     line-height: 9px;
 }
+

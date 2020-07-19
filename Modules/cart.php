@@ -84,6 +84,9 @@ text-align: center;
     width: 496px;
     margin-right: 0px;
 }
+div#form-button {
+    text-align: right;
+}
 .submit_order {
     text-align: center;
     width: 100%;
@@ -120,31 +123,33 @@ a.tieptuc {
     margin: 0;
     }
 </style>
- <?php
+<?php
         include 'connect.php';
         if (!isset($_SESSION["cart"])) {
             $_SESSION["cart"] = array();
         }
+         $error = false;
         if (isset($_GET['action'])) {
-        	function update_cart($add=false)
-        	{
+            function update_cart($add=false)
+            {
  foreach ($_POST['quantity'] as $id => $quantity) {
- 	if ($quantity==0) {
- 	unset($_SESSION["cart"][$id]);
- 	}
- 	else{
+   
+    if ($quantity==0) {
+    unset($_SESSION["cart"][$id]);
+    }
+    else{
       if ($add) {
- 		  $_SESSION["cart"][$id] += $quantity;
+          $_SESSION["cart"][$id] += $quantity;
                    
-        	}
-        	else{
-        		 $_SESSION["cart"][$id] = $quantity;
-        	}
- 	}
- 	
+            }
+            else{
+                 $_SESSION["cart"][$id] = $quantity;
+            }
+    }
+    
 
    }
-        	}
+            }
 
             switch ($_GET['action']) {
                 case "add":
@@ -153,19 +158,59 @@ a.tieptuc {
                     break;
                     case "delete":
                     if (isset($_GET['id'])) {
-                    	# code...
-                    	unset($_SESSION["cart"][$_GET['id']]);
+                        # code...
+                        unset($_SESSION["cart"][$_GET['id']]);
                     }
                     header('location:cart.php');
                     break;
                     case"submit":
                   if (isset($_POST['update_click'])) {
-                  	# code...
+                    # code...
              update_cart();
               header('location:cart.php');
                   }
                   elseif (isset($_POST['order_click'])) {
-                  	# code...
+
+                   if (empty($_POST['name'])) {
+                            $error = "Bạn chưa nhập tên của người nhận";
+                        } elseif (empty($_POST['address'])) {
+                            $error = "Bạn chưa nhập điện thoại người nhận";
+                        } elseif (empty($_POST['phone'])) {
+                            $error = "Bạn chưa nhập số điện thoạingười nhận";
+                        } elseif (empty($_POST['quantity'])) {
+                            $error = "Giỏ hàng rỗng";
+                        }
+                      
+                         if ($error == false && !empty($_POST['quantity'])) { //Xử lý lưu giỏ hàng vào db
+                          $products = mysqli_query($con, "SELECT * FROM `product` WHERE `id` IN (" . implode(",", array_keys($_POST['quantity'])) . ")");
+                            $total = 0;
+                           
+                            $orderProducts = array();
+                             while ($row = mysqli_fetch_array($products)) {
+                                $orderProducts[] = $row;
+                                $total += $row['price'] * $_POST['quantity'][$row['id']];
+                            }
+
+
+                               $insertOrder = mysqli_query($con, "INSERT INTO `orders` (`id`, `name`, `phone`, `address`, `note`, `total`, `created_time`, `last_updated`) VALUES (NULL, '" . $_POST['name'] . "', '" . $_POST['phone'] . "', '" . $_POST['address'] . "', '" . $_POST['note'] . "', '" . $total . "', '" . time() . "', '" . time() . "');");
+                             
+                                 $orderID = $con->insert_id;
+                                   $insertString="";
+                                 # code...
+                             
+                                      foreach ($orderProducts as $key => $product) {
+                                $insertString .= "(NULL, '" . $orderID . "', '" . $product['id'] . "', '" . $_POST['quantity'][$product['id']] . "', '" . $product['price'] . "', '" . time() . "', '" . time() . "')";
+                                if ($key != count($orderProducts) - 1) {
+                                    $insertString .= ",";
+                                }
+                            }
+                        
+                              $insertOrder = mysqli_query($con, "INSERT INTO `order_detail` (`id`, `order_id`, `product_id`, `quantity`, `price`, `created_time`, `last_updated`) VALUES " . $insertString . ";");
+
+                            $success = "Đặt hàng thành công";
+                            unset($_SESSION['cart']);
+                         }
+                    
                   }
                     break;
             }
@@ -177,71 +222,115 @@ a.tieptuc {
 <div class="postmain">
 	<div class="wapper">
 		<div class="giohang_content">
-			<h1 class="page_title_nobd">Giỏ hàng</h1>
-			<form action="cart.php?action=submit" method="POST">
-			<table class="tablecart">
-				<tr>
-					<td class="product-number">STT</td>
-					<td class="product-img">ẢNH</td>
-					<td class="product-name">TÊN SẢN PHẨM</td>
-					<td class="product-price">ĐƠN GIÁ</td>
-		            <td class="product-quantity">SỐ LƯỢNG</td>
-					<td class="total-money">TỔNG</td>
-					<td class="product-delete">XÓA</td>
-				</tr>
-				 <?php 
+           
+            <?php if  (!empty($error)){?>
+
+               <div id="notify-meg"><?=$error?>. <a href="javascript:history.back()">Quay lại</a></div> 
+                       
+         <?php   } elseif(!empty($success)) {?>
+            <div id="notify-msg">
+                    <?= $success ?>. <a href="header.php">Tiếp tục mua hàng</a>
+                </div>
+            <?php }else{?>
+
+      <h1 class="page_title_nobd">Giỏ hàng</h1>
+            <form action="cart.php?action=submit" method="POST">
+            <table class="tablecart">
+                <tr>
+                    <td class="product-number">STT</td>
+                    <td class="product-img">ẢNH</td>
+                    <td class="product-name">TÊN SẢN PHẨM</td>
+                    <td class="product-price">ĐƠN GIÁ</td>
+                    <td class="product-quantity">SỐ LƯỢNG</td>
+                    <td class="total-money">TỔNG</td>
+                    <td class="product-delete">XÓA</td>
+                </tr>
+              
+                    
+             
+
+                 <?php 
+                 if (isset($products)) {
+                  $total_quantity=0;
+                   $total=0;
                     $num = 1;
+                  
+                  
             while ($row = mysqli_fetch_array($products)) { ?>
-				<tr>
-					<td class="product-number"><?=$num++;?></td>
-					<td class="product-img"><img  class="cart_img"src="<?=$row['image']?>" alt=""></td>
-					<td class="product-name"><p class="cart_ten"><?=$row['name']?></p></td>
-					<td class="product-price"><?=$row['price']?></td>
-					<td class="product-quantity"><input type="text" value="<?=$_SESSION["cart"][$row['id']]?>" name="quantity[<?=$row['id']?>]" /></td>
-					<td class="product-money"><b><?=$row['price']?></b></td>
-		        	<td class="product-delete"><span class="cart_remove">
-		        		<a href="cart.php?action=delete&id=<?=$row['id']?>">
-		        		<img src="img/icon_trash.png" alt="">
-		        	</a>
-		        	</span></td>
-				</tr>
-				 <?php 
+
+                <tr>
+                    <td class="product-number"><?=$num++;?></td>
+                    <td class="product-img"><img  class="cart_img"src="../<?=$row['image']?>" alt=""></td>
+                    <td class="product-name"><p class="cart_ten"><?=$row['name']?></p></td>
+                    <td class="product-price"><?=$row['price']?>VND</td>
+                    <td class="product-quantity"><input type="text" value="<?=$_SESSION["cart"][$row['id']]?>" name="quantity[<?=$row['id']?>]" /></td>
+                    <td class="product-money"><b><?=$row['price']*$_SESSION["cart"][$row['id']]?></b></td>
+                    <td class="product-delete"><span class="cart_remove">
+                        <a href="cart.php?action=delete&id=<?=$row['id']?>">
+                        <img src="img/icon_trash.png" alt="">
+                    </a>
+                    </span></td>
+                  
+                </tr>
+
+                 <?php 
+                  $total += $row['price'] * $_SESSION["cart"][$row['id']];
                     $num++;
-                    } ?>
-				<tr>
-					<td colspan="3"></td>
-					<td colspan="4">
-						<p class="cart_tongdonhang">
-							Tổng giá trị đơn hàng: <span>750000</span>VND
-						</p>
-					</td>
-				</tr>
-			</table>
-		</div>
-		 <div id="form-button">
+                   
+                    } 
+
+                  ?>
+    <tr>
+                    <td colspan="3"></td>
+                    <td colspan="4">
+                        <p class="cart_tongdonhang">
+                            Tổng giá trị đơn hàng: <span><?= number_format($total, 0, ",", ".") ?></span>VND
+                        </p>
+                    </td>
+                </tr>
+
+
+                 <?php
+                }
+                else {
+                    echo '<span style="color:red;"><i>Giỏ hàng của bạn trống vui lòng mua thêm hàng !<i></span>';
+                }
+
+                   ?>
+            
+            </table>
+        </div>
+         <div id="form-button">
                     <input type="submit" name="update_click" value="Cập nhật" />
                 </div>
-		<div class="payment_content">	
-			
-				<div class="col">	
-					            <input  name="hoten" value="" placeholder="Họ tên">
-								<input  name="diachi" value="" placeholder="Địa chỉ">
-								<input  name="sodienthoai" value="" placeholder="Số điện thoại">
-								<input  name="email" value="" placeholder="Email">
-								</div>
-				<div class="col">
-								<textarea name="noidung" placeholder="Lời nhắn"></textarea>
-					
-						</div>
-						<div class="col col_3">
-								<div class="textcontent">
-									<p><font face="Roboto, sans-serif"><span style="font-size: 16px;">Phân phối các loại bia nhập khẩu chứ danh trên thế giới, chúng tôi là đại lý bán bia rượu ngoại nhập khẩu uy tín giá rẻ tại Hà Nội. Bia xuất bán từ kho nên giá luôn rẻ hơn so với giá bán lẻ bia nhập khẩu trên thị trường.</span></font></p>								</div>
-							</div>
-							<div class="submit_order">	
-					<input type="submit" class="form_cart_submit_btn" name="order_click" value="Gửi đơn hàng">
-								<a class="tieptuc" onclick="window.history.back();">Tiếp tục mua hàng</a>
-							</div>
-			</form>
-		</div>
+                <hr>    
+        <div class="payment_content">   
+            
+                <div class="col">   
+                                <input  name="name" value="" placeholder="Họ tên">
+                                <input  name="address" value="" placeholder="Địa chỉ">
+                                <input  name="phone" value="" placeholder="Số điện thoại">
+                                
+                                </div>
+                <div class="col">
+                                <textarea name="note" placeholder="Lời nhắn"></textarea>
+                    
+                        </div>
+                        <div class="col col_3">
+                                <div class="textcontent">
+                                    <p><font face="Roboto, sans-serif"><span style="font-size: 16px;">Phân phối các loại bia nhập khẩu chứ danh trên thế giới, chúng tôi là đại lý bán bia rượu ngoại nhập khẩu uy tín giá rẻ tại Hà Nội. Bia xuất bán từ kho nên giá luôn rẻ hơn so với giá bán lẻ bia nhập khẩu trên thị trường.</span></font></p>                                </div>
+                            </div>
+                            <div class="submit_order">  
+                    <input type="submit" class="form_cart_submit_btn" name="order_click" value="Gửi đơn hàng">
+                            <a  href="header.php"class="tieptuc">Tiếp tục mua hàng</a>
+                            </div>
+            </form>
+
+
+            <?php
+        }
+            
+             ?>
+					</div>
 	</div>
 </div>
